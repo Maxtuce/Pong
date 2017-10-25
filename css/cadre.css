@@ -1,0 +1,64 @@
+html, body{margin: 0px; padding: 0px; height:100%; font-size: 12px;}
+*{box-sizing:border-box;}
+
+#Jeu{height: 100%;}
+nav#NavGauche{
+	height: 100%;
+    position: fixed;
+    display: block;
+    overflow-y: hidden;
+    overflow-x: hidden;
+    width: 20%;
+    background-color: #e8e8e8;
+    border-right: 1px solid #bdbdbd;
+}
+
+.Scroll1::-webkit-scrollbar{height:15px;width:5px}
+.Scroll1::-webkit-scrollbar-button{height:0;width:0}
+.Scroll1::-webkit-scrollbar-thumb{border-right: 1px solid #999; background-clip:padding-box;background-color:rgba(0,0,0,.0);border:0px solid transparent;-webkit-border-radius:2px;border-radius:2px;min-height:20px;min-width:5px;height:5px;width:5px}
+.Scroll1:hover::-webkit-scrollbar-thumb{background-color:rgba(0,0,0,.2)}
+.Scroll1::-webkit-scrollbar-thumb:hover,.Scroll1::-webkit-scrollbar-thumb:active{background-color:rgba(0,0,0,.4)}
+
+
+nav#NavGauche form{width: 100%; height: auto; min-height: 40px;}
+input#NomJoueur{ 
+    line-height: 40px;
+    display: block;
+    float: left;
+    padding: 0 20px;
+    text-decoration: none;
+    color: #333;
+    border: 0px;
+    background-color: #8dc351;
+    color: #fff;
+    cursor: pointer;
+    width: 100%;
+    font-weight: bold;
+    text-align: center;
+    font-size: 20px;
+}
+
+
+input#InputMessagerie{width:100%;border:0px;border-bottom:1px solid #999; border-top:1px solid #999; border-radius: 0px;height:40px;line-height:40px;padding-left:10px}
+
+
+nav#NavGauche section{height: calc( 50% - 40px ); overflow: auto; padding:10px;}
+nav#NavGauche section p {line-height: 15px;margin: 0px;font-family: monospace,sans-serif;}
+section#Console{background-color: #F9F9F9;}
+section#Log{background-color: #808080; }
+section#Log p{color: #fff;}
+
+#BoiteCanvas{
+	width: calc( 100% - 20%);
+	height: 100%;
+	margin-left: 20%;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+}
+canvas{background-color: #CCC;position:relative; 
+	/* width: calc( 100% - 20px ); height: calc( 100% - 20px ); */
+	border: 1px solid #999; }
+
+
