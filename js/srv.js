@@ -31,7 +31,7 @@ var pong = {
 			masse:1
 		},
 		raquette:{
-			dimensionsInitiales:{largeur:0.03,longueur:0.1},
+			dimensionsInitiales:{largeur:0.05,longueur:0.5},
 			vitesseMax: 50
 		}
 	}
@@ -154,7 +154,7 @@ function loop(){
 		var p = pong.joueurs[pong.service];var v = pong.service===0?-1:1;
 		if (p){
 			pong.balles.forEach(function(b){
-				b.position.set(p.raquette.position.x-v*(p.raquette.dimensions.x/2+b.radius+1),p.raquette.position.y);
+				b.position.set(p.raquette.position.x-v*(p.raquette.dimensions.largeur/2+b.radius),p.raquette.position.y);
 				b.vitesseRotation=0;
 				});
 			}
@@ -330,7 +330,8 @@ ObjetDynamique.prototype.maj=function(){//split
 	this.vitesse.add(this.acceleration);
 	this.vitesse.y=clamp(this.vitesse.y,-this.vitesseMax,this.vitesseMax); //faire avec length
 	this.position.add(this.vitesse);
-	//this.position.y=clamp(this.position.y,this.limits.y.min+this.dimensions.y/2,this.limits.y.max-this.dimensions.y/2);//dim ?
+	this.position.y=clamp(this.position.y,this.limits.y.min+this.dimensions.longueur/2,this.limits.y.max-this.dimensions.longueur/2);//dim ?
+	
 }
 ObjetDynamique.prototype.majAccel=function(a){
 	this.acceleration.copy(a);

@@ -22,10 +22,10 @@ function start(){
 	//window.onbeforeunload=function () {socket.emit('deconnexion', '');};
 	socket.on("majPong",function(pongServer){pong=pongServer;});
 	socket.on('animationStart',function(){animationLoop();});
-	socket.on("enterInGame",function(joueurServer){
-		//?
-		console.log("entré en jeu : ",joueur);
-	});
+	socket.on("enterInGame",function(joueurServer){joueur=joueurServer;console.log("entré en jeu : ",joueur);});
+		
+		
+	
 	
 	var container = S('BoiteCanvas'),canvasWidth=650,canvasHeight=650;
 	//jeu.canvasBG = document.createElement('canvas');jeu.canvasBG.width=canvasWidth;jeu.canvasBG.height=canvasHeight;jeu.canvasBG.ctx=jeu.canvasBG.getContext('2d');container.appendChild(jeu.canvasBG);
@@ -59,24 +59,36 @@ function start(){
 		//jeu.canvas.ctx.fillRect(-jeu.canvas.width/2,-jeu.canvas.height/2,jeu.canvas.width, jeu.canvas.height);
 		
 		
-		if(jeu.keyDown){socket.emit("majAccel", {x:0,y:-0.05});}
-		if(jeu.keyUp){socket.emit("majAccel", {x:0,y:0.05});}
+		if(jeu.keyDown){socket.emit("majAccel", {x:0,y:-0.005});}
+		if(jeu.keyUp){socket.emit("majAccel", {x:0,y:0.005});}
 		
-		if(pong.joueurs[0]) S('Log').innerHTML=JSON.stringify(pong.joueurs[0].raquette.vitesse);
+		//if(pong.joueurs[0]) S('Log').innerHTML=JSON.stringify(pong.joueurs[0].raquette.vitesse);
 		
 		if(pong.status!==0){
 			pong.joueurs.forEach(function (j){dessinerRaquette(j);});
 			pong.balles.forEach(function (b){dessinerBalle(b);});
 		}
 		frameCount++;
+		
+		//if(frameCount%60==0){ console.log(pong);}
+			
+		
 	}
 	function dessinerRaquette(j){
 		var i,index,r=j.raquette,ctx=jeu.canvas.ctx,p,tab=[[-1,1],[1,1],[1,-1],[-1,-1]];
 		
-		//jeu.canvas.ctx.fillRect(r.position.x-r.dimensions.x/2,r.position.y-r.dimensions.y/2,r.dimensions.x,r.dimensions.y);
-		ctx.fillStyle="purple";
 		ctx.beginPath();
+		ctx.fillStyle="#000";
+		ctx.fillRect(r.position.x-r.dimensions.largeur/2,r.position.y-r.dimensions.longueur/2,r.dimensions.largeur,r.dimensions.longueur);
+		
+		//ctx.fillRect(-1,-1,0.05,0.5);
+		
+		
+		if(frameCount%60==0) console.log(r);
+		/*
 		p={x:r.position.x+tab[0][0]*Math.cos(r.rotation)*r.dimensions.largeur/2,y:r.position.y+tab[0][1]*Math.sin(r.rotation)*r.dimensions.longueur/2};
+		
+		if(frameCount%60==0) console.log(p.x,p.y);
 		ctx.moveTo(p.x,p.y);
 		for(i=1;i<5;i++){
 			index=i%4;
@@ -84,13 +96,14 @@ function start(){
 			p.y=r.position.y+tab[index][1]*Math.sin(r.rotation)*r.dimensions.longueur/2;
 			ctx.lineTo(p.x,p.y);
 		}
+		*/
 		ctx.fill();
-		if(frameCount%60==0) console.log(r.position);
+		
 	}
 	function dessinerBalle(b){
 		
 		jeu.canvas.ctx.save();
-		if (frameCount%1000==0) console.log(b);
+		//if (frameCount%1000==0) console.log(b);
 		
 		jeu.canvas.ctx.translate(b.position.x,b.position.y);
 		jeu.canvas.ctx.rotate(b.rotation * Math.PI / 180);
