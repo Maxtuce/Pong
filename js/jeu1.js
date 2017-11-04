@@ -8,7 +8,7 @@ window.addEventListener("load",function(){start();});
 function start(){
 	
 	var consoleChat = S('Console'),consoleJeu = S('ConsoleJeu'),inputMsg = S('InputMessagerie'),inputNom = S('NomJoueur');
-	var socket = io.connect('http://'+location.host+':8080');
+	var socket = io.connect('http://'+location.hostname+':8080');
 	var pong={},joueur={};
 	
 	socket.on('demandeId',function(){console.log('demandeId de',JSON.stringify(S('Jeu').dataset));socket.emit('envoiId',S('Jeu').dataset.id);});
