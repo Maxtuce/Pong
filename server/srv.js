@@ -51,7 +51,7 @@ function start(){
 	pong.murs.push(new Segment({start:pts[0],end:pts[1],rebond:true}));
 	pong.murs.push(new Segment({start:pts[1],end:pts[2],rebond:true}));
 	pong.murs.push(new Segment({start:pts[2],end:pts[3],rebond:true}));
-	pong.murs.push(new Segment({start:pts[3],end:pts[0],onHit:perdage(1)}));
+	pong.murs.push(new Segment({start:pts[3],end:pts[0],rebond:true}));
 	
 	function perdage(jp){
 		return function perdu(){
@@ -172,7 +172,7 @@ function collisions(){
 			
 		pong.murs.forEach(function(mur,index){//doit stopper après le 1er ???
 			var collision=mur.testCollision(b,fp);
-			if(frameCount==0 && index==0) console.log(b.position,fp);
+			//if(frameCount==0 && index==0) console.log(b.position,fp);
 			//if(frameCount<200) S("dbg").innerHTML = collision.test;
 			if(collision.test){
 				nc++;
@@ -188,7 +188,7 @@ function collisions(){
 		
 		if(nc>2) console.log("collision triple darnitr");if(nc==2) console.log("collision double hahahahihihuhuhuhuhauhohohoho");
 		if(nc && nc<=2){//collision double maxi
-			S("dbg").innerHTML = "collision!!!  "+nc+"  "+fc;setTimeout(function(){S("dbg").innerHTML ="--";},2000);
+			console.log("collision!!!  "+nc+"  "+fc);
 			//var positionContact=b.rebondirSurSegment(pong.murs[fc],fp);//rebond ou perdu
 			//limit bords ici
 			/*var autreMur=pong.murs.find(function(mur){//doit stopper après le 1er ???
@@ -385,6 +385,7 @@ Vec2.prototype.multiplyScalar=function(s){this.x*=s;this.y*=s;return this;}
 Vec2.prototype.multiply=function(p){this.x*=p.x;this.y*=p.y;return this;}
 Vec2.prototype.angle=function(){var angle = Math.atan2( this.y, this.x );if ( angle < 0 ) angle += Math.PI;return angle;}
 Vec2.prototype.rotate=function(angle){return this.rotateAround(new Vec2(),angle);}
+Vec2.prototype.dot=function(u){return this.x*u.x+this.y*u.y;}
 Vec2.prototype.rotateAround = function ( center, angle ) {
 
 		var c = Math.cos( angle ), s = Math.sin( angle );
