@@ -13,52 +13,55 @@ canvas{margin:auto;border:solid 1px #111}
 <body>
 <div id="dbg">debug</div>
 <script>
-var grosNombre=1e6, epsilon = 0.001;
-var mouse={down:false},running=false;
-var ctx,frameCount=0,pong = {
-	balles:[]
-	,murs:[]
+var bigNumber=1e6, epsilon = 0.001;
+var mouse={down:false};
+var running=false;
+var context;
+var frameCount=0;
+var pong = {
+	balls:[]
+	,walls:[]
 	,obstacles:[]
-	,raquettes:[]
+	,rackets:[]
 };
 function start(){
 	var W=window.innerWidth,H=window.innerHeight,min=Math.floor(0.95*Math.min(W,H));
 	var canvas = document.createElement('canvas');
 	canvas.width=min;canvas.height=min;
-	ctx=canvas.getContext('2d');ctx.translate(min/2,min/2);ctx.scale(min/2,-min/2);
-	ctx.fillStyle="white";ctx.lineWidth=0.002;
+	context=canvas.getContext('2d');context.translate(min/2,min/2);context.scale(min/2,-min/2);
+	context.fillStyle="white";context.lineWidth=0.002;
 	document.body.appendChild(canvas);
 	
 	var pts=[
-		new Vec2(-1,1)
-		,new Vec2(1,1)
-		,new Vec2(1,-1)
-		,new Vec2(-1,-1)
-		,new Vec2(0.2,0.4)
-		,new Vec2(0.4,-0.1)
-		,new Vec2(0.5,0.4)
-		,new Vec2(0.8,0.7)
+		new Vector(-1,1)
+		,new Vector(1,1)
+		,new Vector(1,-1)
+		,new Vector(-1,-1)
+		,new Vector(0.2,0.4)
+		,new Vector(0.4,-0.1)
+		,new Vector(0.5,0.4)
+		,new Vector(0.8,0.7)
 	];
 	
-	//dessinerBalle(ctx,{x:0,y:0},0.05);
-	//pong.balles.push(new Balle({radius:0.05,coeffRebond:1,position:new Vec2(0.12,0),vitesse:new Vec2().randomize().setLength(0.05)}));
-	pong.balles.push(new Balle({radius:0.05,coeffRebond:1,position:new Vec2(0.4,-0.7),vitesse:new Vec2(0,1).setLength(0.002)}));
+	//drawBall(context,{x:0,y:0},0.05);
+	//pong.balls.push(new Ball({radius:0.05,coeffRebond:1,position:new Vector(0.12,0),speed:new Vector().randomize().setLength(0.05)}));
+	pong.balls.push(new Ball({radius:0.05,coeffRebond:1,position:new Vector(0.4,-0.7),speed:new Vector(0,1).setLength(0.002)}));
 	
-	//pong.balles.push(new Balle({radius:0.02,coeffRebond:0.98,position:new Vec2(0.12,0),vitesse:new Vec2().randomize().setLength(0.07)}));
+	//pong.balls.push(new Ball({radius:0.02,coeffRebond:0.98,position:new Vector(0.12,0),speed:new Vector().randomize().setLength(0.07)}));
 	
-	//pong.balles.push(new Balle({position:new Vec2(0,0),vitesse:new Vec2(-0.05+0.1*Math.random(),-0.05+0.1*Math.random())}));
-	console.log("vitesse initiale : "+pong.balles[0].vitesse.x+","+pong.balles[0].vitesse.y);
-	pong.murs.push(new Segment({start:pts[0],end:pts[1],rebond:true}));
-	pong.murs.push(new Segment({start:pts[1],end:pts[2],rebond:true}));
-	pong.murs.push(new Segment({start:pts[2],end:pts[3],rebond:true}));
-	pong.murs.push(new Segment({start:pts[3],end:pts[0],rebond:true}));
-	pong.murs.push(new Segment({start:pts[4],end:pts[5],rebond:true}));
-	pong.murs.push(new Segment({start:pts[6],end:pts[5],rebond:true}));
-	pong.murs.push(new Segment({start:pts[4],end:pts[6],rebond:true}));
-	//pong.murs.push(new Segment({start:pts[7],end:pts[6],rebond:true}));
+	//pong.balls.push(new Ball({position:new Vector(0,0),speed:new Vector(-0.05+0.1*Math.random(),-0.05+0.1*Math.random())}));
+	console.log("start speed : "+pong.balls[0].speed.x+","+pong.balls[0].speed.y);
+	pong.walls.push(new Segment({start:pts[0],end:pts[1],rebond:true}));
+	pong.walls.push(new Segment({start:pts[1],end:pts[2],rebond:true}));
+	pong.walls.push(new Segment({start:pts[2],end:pts[3],rebond:true}));
+	pong.walls.push(new Segment({start:pts[3],end:pts[0],rebond:true}));
+	pong.walls.push(new Segment({start:pts[4],end:pts[5],rebond:true}));
+	pong.walls.push(new Segment({start:pts[6],end:pts[5],rebond:true}));
+	pong.walls.push(new Segment({start:pts[4],end:pts[6],rebond:true}));
+	//pong.walls.push(new Segment({start:pts[7],end:pts[6],rebond:true}));
 	
 	
-	console.log(pong.balles, pong.murs);
+	console.log(pong.balls, pong.walls);
 	nextFrame();
 	canvas.addEventListener("click",function(e){running=!running;nextFrame();},false);
 	
@@ -67,34 +70,35 @@ function start(){
 	//window.addEventListener("mouseup",function(e){mouse.down=false;},false);
 }
 
-function dessinerBalle(ctx,pos,radius){
-	ctx.moveTo(pos.x+radius,pos.y);
-	ctx.arc(pos.x,pos.y,radius,0,2*Math.PI);
+function drawBall(context,pos,radius){
+	context.moveTo(pos.x+radius,pos.y);
+	context.arc(pos.x,pos.y,radius,0,2*Math.PI);
 }
-function dessinerBalle2(pos,radius,color){
-	ctx.strokeStyle=color;
-	ctx.beginPath();
-	ctx.moveTo(pos.x+radius,pos.y);
-	ctx.arc(pos.x,pos.y,radius,0,2*Math.PI);
-	ctx.stroke();
+function drawBall2(pos,radius,color){
+	context.strokeStyle=color;
+	context.beginPath();
+	context.moveTo(pos.x+radius,pos.y);
+	context.arc(pos.x,pos.y,radius,0,2*Math.PI);
+	context.stroke();
 }
-function dessinerLigne(s,e,c){
-	ctx.strokeStyle=c;ctx.beginPath();
-	ctx.moveTo(s.x,s.y);
-	ctx.lineTo(e.x,e.y);
-	ctx.stroke();
+function drawLine(start,end,color){
+	context.strokeStyle=color;
+	context.beginPath();
+	context.moveTo(start.x,start.y);
+	context.lineTo(end.x,end.y);
+	context.stroke();
 }
-function dessinerMur(m){
-	dessinerLigne(m.start,m.end,"black");
+function drawWall(wall){
+	drawLine(wall.start,wall.end,"black");
 }
-function dessinerObstacles(ctx,obss){
-	ctx.fillStyle="grey";
-	ctx.beginPath();
-	obss.forEach(dessinerObstacle);
-	ctx.fill();
+function drawObstacles(context,obstacles){
+	context.fillStyle="grey";
+	context.beginPath();
+	obstacles.forEach(drawObstacle);
+	context.fill();
 	
-	function dessinerObstacle(obs){
-		var s=obs.segments[0];
+	function drawObstacle(obstacle){
+		var s=obstacle.segments[0];
 		
 	}
 }
@@ -102,252 +106,274 @@ function nextFrame(){
 	//if(frameCount<15000) requestAnimationFrame(nextFrame);
 	if(running) requestAnimationFrame(nextFrame);
 	if(frameCount==14999) console.log("stop");
-	ctx.clearRect(-1,-1,2,2);
+	context.clearRect(-1,-1,2,2);
 	collision2();//and maj
-	//dessinerBalle(ctx,pong.balles[0].position,pong.balles[0].radius);
-	ctx.fillStyle="white";
-	ctx.beginPath();
-	pong.balles.forEach(function(b){
-		//dessinerBalle(ctx,b.position,b.radius);
+	//drawBall(context,pong.balls[0].position,pong.balls[0].radius);
+	context.fillStyle="white";
+	context.beginPath();
+	pong.balls.forEach(function(b){
+		//drawBall(context,b.position,b.radius);
 	});
-	ctx.fill();
-	pong.murs.forEach(function(mur){
-		dessinerMur(mur);
+	context.fill();
+	pong.walls.forEach(function(wall){
+		drawWall(wall);
 	});
 	frameCount++;
 }
 function collision2(){//maj position incluse, test sur trajectoire
-	pong.balles.forEach(function(b){
-		var savedPosition=b.position.clone();
-		var fp=savedPosition.clone().add(b.vitesse);
-		var nc=0,fc=[];
+	pong.balls.forEach(function(ball){
+		var savedPosition=ball.position.clone();
+		var futurePosition=savedPosition.clone().add(ball.speed);
+		var numberOfCollisions=0;
+		var fc=[];
 	
-		pong.murs.forEach(function(mur,index){//doit stopper après le 1er ???
-			var collision=mur.testCollision(b,b.position,fp);
+		pong.walls.forEach(function(wall,index){//doit stopper après le 1er ???
+			var collision=wall.testCollision(ball,ball.position,futurePosition);
 			if(collision.hitNext){
-				nc++;
-				fc.push({index:index,np:collision.newPos,nv:collision.newVit,pos:collision.positionAuContact});
+				numberOfCollisions++;
+				fc.push({index:index,np:collision.newPos,nv:collision.newSpeed,pos:collision.positionOnTouch});
 			}
 		});
 		
-		if(nc>2) console.log("collision triple darnitr");
-		if(nc){
-			var fc0=fc[0];S("dbg").innerHTML = nc+" collision!!!  "+"  "+fc.length;setTimeout(function(){S("dbg").innerHTML ="--";},2000);
-			if(nc===1) console.log("collision simple");
-			if(nc==2){
+		if(numberOfCollisions>2) console.log("collision triple darnitr");
+		if(numberOfCollisions){
+			var fc0=fc[0];
+			S("dbg").innerHTML = numberOfCollisions+" collision!!!  "+"  "+fc.length;
+			setTimeout(function(){S("dbg").innerHTML ="--";},2000);
+			if(numberOfCollisions===1) console.log("simple collision");
+			if(numberOfCollisions==2){
 				console.log("collision double hahahahihihuhuhuhuhauhohohoho");
-				var mur1=pong.murs[fc[0].index],mur2=pong.murs[fc[1].index];
-				var pc=mur1.pointDeRencontre(mur2.start,mur2.end).pc;
-				var pt1=fc[0].pos.clone(),pt2=fc[1].pos.clone();
-				var d1=pt1.sub(b.position).getSqLength(),d2=pt2.sub(b.position).getSqLength();
+				var wall1=pong.walls[fc[0].index];
+				var wall2=pong.walls[fc[1].index];
+				var pc=wall1.pointDeRencontre(wall2.start,wall2.end).pc;
+				var pt1=fc[0].pos.clone();
+				var pt2=fc[1].pos.clone();
+				var d1=pt1.sub(ball.position).getSqLength();
+				var d2=pt2.sub(ball.position).getSqLength();
 				if(d1>d2){fc0=fc[1];}
 			}
-				var nnc=0,ffc=[];
-				b.position.copy(fc0.np);
-				b.vitesse.copy(fc0.nv);
-				pong.murs.forEach(function(mur,index){
-					collision=mur.testCollision(b,fc0.pos,fc0.np);
-					if(collision.hitNext){
-						nnc++;ffc.push({index:index,np:collision.newPos});
-					}
-				});
-				if(nnc>1) console.log("WTFFF");
-				if(nnc>0){
-					var ffc0=ffc[0];
-					var mur=pong.murs[ffc0.index];
-					b.position.copy(ffc0.np);
-					b.vitesse.copy(mur.rebondVecteur(b.vitesse).multiplyScalar(b.coeffRebond*mur.coeffRebond));
+			var nnc=0;
+			var ffc=[];
+			ball.position.copy(fc0.np);
+			ball.speed.copy(fc0.nv);
+			pong.walls.forEach(function(wall,index){
+				collision=wall.testCollision(ball,fc0.pos,fc0.np);
+				if(collision.hitNext){
+					nnc++;
+					ffc.push({index:index,np:collision.newPos});
 				}
+			});
+			if(nnc>1) console.log("WTFFF");
+			if(nnc>0){
+				var ffc0=ffc[0];
+				var wall=pong.walls[ffc0.index];
+				ball.position.copy(ffc0.np);
+				ball.speed.copy(wall.bounceVector(ball.speed).multiplyScalar(ball.coeffRebond*wall.coeffRebond));
+			}
 		}
-		if(!nc) b.position.add(b.vitesse);//.maj
-		
+		if(!numberOfCollisions){
+			ball.position.add(ball.speed);//.maj
+		}
 		
 	});
 	
 }
 function Segment(params){//point+normal ??
 	//séparer dynamique ou non, même fct par frame
-	this.start=params.start;this.end=params.end;
-	this.directeur=new Vec2(this.end.x-this.start.x,this.end.y-this.start.y).normalize();
-	this.normal=new Vec2(this.directeur.y,-this.directeur.x).normalize();//à droite (yd,-xd) ou (coeff,-1)
+	this.start=params.start;
+	this.end=params.end;
+	this.directeur=new Vector(this.end.x-this.start.x,this.end.y-this.start.y).normalize();
+	this.normal=new Vector(this.directeur.y,-this.directeur.x).normalize();//à droite (yd,-xd) ou (coeff,-1)
 	this.coeffRebond=params.coeffRebond||1;
 	this.rebond=params.rebond||false;
-	//this.pointDeContact={};//pos balle au contact
+	//this.touchPoint={};//pos balle au contact
 }
-Segment.prototype.rebondVecteur = function(v){
+Segment.prototype.bounceVector = function(v){
 	return v.clone().add(this.normal.clone().multiplyScalar(this.normal.dot(v)).multiplyScalar(-2));
 }
 Segment.prototype.pointDeRencontre=function(pos1,pos2){
 	
-	var vb=new Vec2(pos2.x-pos1.x,pos2.y-pos1.y);//"vitese" ou pas
-	var db=vb.x==0?grosNombre:vb.y/vb.x;//iughikulghkl
+	var ballSpeed=new Vector(pos2.x-pos1.x,pos2.y-pos1.y);//"vitesse" ou pas
+	var db=ballSpeed.x==0?bigNumber:ballSpeed.y/ballSpeed.x;//iughikulghkl
 	var ob=pos2.y-db*pos2.x;
-	var ds=this.end.x==this.start.x?grosNombre:(this.end.y-this.start.y)/(this.end.x-this.start.x);
+	var ds=this.end.x==this.start.x?bigNumber:(this.end.y-this.start.y)/(this.end.x-this.start.x);
 	var os=this.end.y-ds*this.end.x;
-	var xc=(os-ob)/(db-ds);if(isNaN(xc)) console.log(" xc isNan : "+xc);
+	var xc=(os-ob)/(db-ds);
+	if(isNaN(xc)) console.log(" xc isNan : "+xc);
 	var yc=xc*db+ob;//ds,os
-	var pc = new Vec2(xc,yc);
-	var dn=this.normal.x==0?grosNombre:this.normal.y/this.normal.x;
+	var ballDirectionTouchPoint = new Vector(xc,yc);
+	var dn=this.normal.x==0?bigNumber:this.normal.y/this.normal.x;
 	var on=pos2.y-dn*pos2.x;
-	var hfpx=(os-on)/(dn-ds);
-	var hfpy=hfpx*dn+on;//or ds,os
-	var hfp=new Vec2(hfpx,hfpy);
-	return {pc:pc,hfp:hfp,vb:vb};
+	var ballOrthographicProjectionX=(os-on)/(dn-ds);
+	var ballOrthographicProjectionY=ballOrthographicProjectionX*dn+on;//or ds,os
+	var ballOrthographicProjection=new Vector(ballOrthographicProjectionX,ballOrthographicProjectionY);
+	return {ballDirectionTouchPoint:ballDirectionTouchPoint,
+			ballOrthographicProjection:ballOrthographicProjection,
+			ballSpeed:ballSpeed};
 }
-Segment.prototype.testCollision = function(balle,pos1,pos2){
+Segment.prototype.testCollision = function(ball,pos1,pos2){
 	var pdc=this.pointDeRencontre(pos1,pos2);
-	var pc=pdc.pc,hfp=pdc.hfp,vb=pdc.vb;
-	var dfp = hfp.clone().sub(pos2).getLength();
+	var ballDirectionTouchPoint=pdc.ballDirectionTouchPoint;
+	var ballOrthographicProjection=pdc.ballOrthographicProjection;
+	var ballSpeed=pdc.ballSpeed;
+	var distanceToBallOrthographicProjection = ballOrthographicProjection.clone().sub(pos2).getLength();
 	
-	//nv vecteur vitesse
-	var nv=this.rebondVecteur(vb).multiplyScalar(balle.coeffRebond*this.coeffRebond);
+	//newSpeed vecteur speed
+	var newSpeed=this.bounceVector(ballSpeed).multiplyScalar(ball.coeffRebond*this.coeffRebond);
 	//repositionnement
-	// Thalès dfppc:distance fp-pc,dfp: distance fp-seg -> d:distance centre balle au contact-pc
-	var dfppc=pc.clone().sub(pos2).getLength();
-	//var d=dfppc*(balle.radius+epsilon)/dfp;if(isNaN(d)) console.log(" d is NaN :",d);
-	var d=dfppc*balle.radius/dfp;if(isNaN(d)) console.log(" d is NaN :",d,dfp,dfppc);
+	// Thalès dfppc:distance fp-pc,dfp: distance fp-seg -> d:distance centre ball au contact-pc
+	var distanceToBallDirectionTouchPoint=ballDirectionTouchPoint.clone().sub(pos2).getLength();
+	//var d=distanceToBallDirectionTouchPoint*(ball.radius+epsilon)/dfp;if(isNaN(d)) console.log(" d is NaN :",d);
+	var d=distanceToBallDirectionTouchPoint*ball.radius/distanceToBallOrthographicProjection;
+	if(isNaN(d)) console.log(" d is NaN :",d,distanceToBallOrthographicProjection,distanceToBallDirectionTouchPoint);
 	//position balle au contact
-	var pbc=new Vec2().copy(pc.clone().add(vb.clone().multiplyScalar(-1).setLength(d)));
-	//var pointDeContact = pbc.clone().add(this.normal.clone().multiplyScalar(-(balle.radius+epsilon)));
-	var pointDeContact = pbc.clone().add(this.normal.clone().multiplyScalar(Math.sign(this.normal.dot(vb))*balle.radius));
-	var v1=pc.clone().sub(pos1);
-	var v2=pc.clone().sub(pos2);
-	var dist=v1.getLength(),traverse=v1.dot(v2)<0;
+	var ballPositionOnTouch=new Vector().copy(ballDirectionTouchPoint.clone().add(ballSpeed.clone().multiplyScalar(-1).setLength(d)));
+	//var touchPoint = ballPositionOnTouch.clone().add(this.normal.clone().multiplyScalar(-(ball.radius+epsilon)));
+	var touchPointOnBall = ballPositionOnTouch.clone().add(this.normal.clone().multiplyScalar(Math.sign(this.normal.dot(ballSpeed))*ball.radius));
+	var v1=ballDirectionTouchPoint.clone().sub(pos1);
+	var v2=ballDirectionTouchPoint.clone().sub(pos2);
+	var dist=v1.getLength();
+	var traverse=v1.dot(v2)<0;
 	
-	var sign=vb.getLength()<dist?-1:1;//devant ou derriere ?
-	var diff=d+sign*dfppc;
-	var np=pbc.clone().add(nv.clone().setLength(diff));
+	var sign=ballSpeed.getLength()<dist?-1:1;//devant ou derriere ?
+	var diff=d+sign*distanceToBallDirectionTouchPoint;
+	var newPos=ballPositionOnTouch.clone().add(newSpeed.clone().setLength(diff));
 	
-	var testDistance=dfp<balle.radius,k=0.9*balle.radius;//tester autrement pour traversée
-	var test1=pointDeContact.x>(Math.min(this.start.x,this.end.x)-k-epsilon);
-	var test2=pointDeContact.x<(Math.max(this.start.x,this.end.x)+k+epsilon);
-	var test3=pointDeContact.y>(Math.min(this.start.y,this.end.y)-k-epsilon);
-	var test4=pointDeContact.y<(Math.max(this.start.y,this.end.y)+k+epsilon);
+	var testDistance=distanceToBallOrthographicProjection<ball.radius;
+	var k=0.9*ball.radius;//tester autrement pour traversée
+	var test1=touchPointOnBall.x>(Math.min(this.start.x,this.end.x)-k-epsilon);
+	var test2=touchPointOnBall.x<(Math.max(this.start.x,this.end.x)+k+epsilon);
+	var test3=touchPointOnBall.y>(Math.min(this.start.y,this.end.y)-k-epsilon);
+	var test4=touchPointOnBall.y<(Math.max(this.start.y,this.end.y)+k+epsilon);
 	//var test=testDistance&&test1&&test2&&test3&&test4;
 	var test=(testDistance||traverse)&&test1&&test2&&test3&&test4;
 	
+	context.beginPath();
+	drawBall(context,ball.position,ball.radius);
+	context.fill();
+	context.strokeStyle="green";
+	drawBall2(pos2,ball.radius,"green");
+	drawLine(ball.position,pos2,"blue");
+	drawLine(pos2,ballOrthographicProjection,"red");
+	drawBall2(ballPositionOnTouch,ball.radius,"red");
+	drawBall2(touchPointOnBall,0.4*ball.radius,"green");
 	
-	ctx.beginPath();
-	dessinerBalle(ctx,balle.position,balle.radius);
-	ctx.fill();
-	ctx.strokeStyle="green";
-	dessinerBalle2(pos2,balle.radius,"green");
-	dessinerLigne(balle.position,pos2,"blue");
-	dessinerLigne(pos2,hfp,"red");
-	dessinerBalle2(pbc,balle.radius,"red");
-	dessinerBalle2(pointDeContact,0.4*balle.radius,"green");
-	
-	dessinerBalle2(pc,0.4*balle.radius,"yellow");
+	drawBall2(ballDirectionTouchPoint,0.4*ball.radius,"yellow");
 	//console.log(test);
 	
 	/*if(this.rebond&&test){
-		balle.position.copy(np);
-		balle.vitesse.copy(nv);
+		ball.position.copy(np);
+		ball.speed.copy(newSpeed);
 	}*/
-	//var ps=this.normal.x*vb.x+this.normal.y*vb.y;
+	//var ps=this.normal.x*ballSpeed.x+this.normal.y*ballSpeed.y;
 	
 	//if(frameCount<20) S("dbg").innerHTML = test1&&test2&&test3&&test4;
-	return {hitNext:test,positionAuContact:pbc,newPos:np,newVit:nv};
+	return {hitNext:test,positionOnTouch:ballPositionOnTouch,newPos:newPos,newSpeed:newSpeed};
 }
 //**** ****
-function Balle(params){//rond
-	ObjetDynamique.call(this,params);
+function Ball(params){//rond
+	DynamicObject.call(this,params);
 	this.radius = params.radius || 0.05;
 	this.coeffRebond=params.coeffRebond||1;
 	//this.masse=0;
 }
-Balle.prototype = Object.create(ObjetDynamique.prototype);
-Balle.prototype.constructor=Balle;
-Balle.prototype.rebondirSurSegment=function(seg,fp){//après test rebond, rebond à droite
-	//modifie position et vitesse (et vitesseRotation)
+Ball.prototype = Object.create(DynamicObject.prototype);
+Ball.prototype.constructor=Ball;
+Ball.prototype.bounceOnSegment=function(segment,fp){//après test rebond, rebond à droite
+	//modifie position et speed (et speedRotation)
 	//ne pas soustraire futurepos et pos
-	var pt1=seg.start,pt2=seg.end,pc=seg.pointDeContact;
+	var pt1=segment.start;
+	var pt2=segment.end;
+	var touchPoint=segment.touchPoint;
 	//sans radius pour l'instant
-	//console.log(seg);
-	//maj vitesse
-	this.vitesse.add(seg.normal.clone().multiplyScalar(seg.normal.dot(this.vitesse)).multiplyScalar(-2));
+	//console.log(segment);
+	//maj speed
+	this.speed.add(segment.normal.clone().multiplyScalar(segment.normal.dot(this.speed)).multiplyScalar(-2));
 	//position
 	var lr=fp.clone().sub(pc).getLength();
-	var np=pc.clone().add(this.vitesse.clone().normalize().multiplyScalar(lr));
+	var np=touchPoint.clone().add(this.speed.clone().normalize().multiplyScalar(lr));
 	this.position.set(np.x,np.y);
 	
-	return new Vec2();//point de contact (centr balle)
+	return new Vector();//point de contact (centr balle)
 }
-function ObjetDynamique(params){//un truc qui peut bouger, connaissance du monde ou pas ?
-	params=params||{position:new Vec2()};
-	this.position=params.position || new Vec2();
-	this.vitesse=params.vitesse||new Vec2();
-	this.vitesseMax=params.vitesseMax||0.2;//10% ecran
-	this.acceleration= new Vec2();//this.accelerationMax=params.accelerationMax||0.1;
+function DynamicObject(params){//un truc qui peut bouger, connaissance du monde ou pas ?
+	params=params||{position:new Vector()};
+	this.position=params.position || new Vector();
+	this.speed=params.speed||new Vector();
+	this.speedMax=params.speedMax||0.2;//10% ecran
+	this.acceleration= new Vector();//this.accelerationMax=params.accelerationMax||0.1;
 	this.rotation=0;
-	this.vitesseRotation=0;
+	this.speedRotation=0;
 }
-ObjetDynamique.prototype.limit=function(axis,valMin,valMax){
+DynamicObject.prototype.limit=function(axis,valMin,valMax){
 	this.limits[axis].min=valMin;this.limits[axis].max=valMax;
 }
-ObjetDynamique.prototype.maj=function(){//split
+DynamicObject.prototype.maj=function(){//split
 	
-	this.vitesse.add(this.acceleration);
-	this.vitesse.y=clamp(this.vitesse.y,-this.vitesseMax,this.vitesseMax); 
-	this.position.add(this.vitesse);
+	this.speed.add(this.acceleration);
+	this.speed.y=clamp(this.speed.y,-this.speedMax,this.speedMax); 
+	this.position.add(this.speed);
 	this.position.y=clamp(this.position.y,this.limits.y.min+this.dimensions.y/2,this.limits.y.max-this.dimensions.y/2);//dim ?
 }
-ObjetDynamique.prototype.majAccel=function(a){
+DynamicObject.prototype.majAccel=function(a){
 	this.acceleration.copy(a);
 }
-ObjetDynamique.prototype.ralentir=function(){
-	this.vitesse.multiplyScalar(0.85);
-	if(this.vitesse.getLength()<0.002) this.vitesse.zero();
+DynamicObject.prototype.ralentir=function(){
+	this.speed.multiplyScalar(0.85);
+	if(this.speed.getLength()<0.002) this.speed.zero();
 	this.acceleration.multiplyScalar(0.85);
 	if(this.acceleration.getLength()<0.002) this.acceleration.zero();
 }
 //*** *** ***
 function Obstacle(params){//rectangle ou polygone, n segments 1<=n
 	params=params||{};
-	ObjetDynamique.call(this,params);
-	this.dimensions=params.dimensions||new Vec2();
+	DynamicObject.call(this,params);
+	this.dimensions=params.dimensions||new Vector();
 	this.segments=[];//maj
 }
-Obstacle.prototype = Object.create(ObjetDynamique.prototype);
+Obstacle.prototype = Object.create(DynamicObject.prototype);
 Obstacle.prototype.constructor=Obstacle;
 Obstacle.prototype.majSegments=function(pos0,pos1){//position actuelle, position future
 	
 }
 
 //*** ******
-function Joueur(n,id,ids){
-	this.nom = "Joueur"+n;
-	this.raquette=new Obstacle({vitesseMax:pong.config.raquette.vitesseMax}); //ObjetDynamique, dimensions, angle
+function Player(number,id,ids){
+	this.nom = "Player"+number;
+	this.racket=new Obstacle({speedMax:pong.config.racket.speedMax}); //DynamicObject, dimensions, angle
 	
 	this.playingPosition=undefined;//placé quand entre en jeu
 	this.score=0;
 	
 	this.id=id;
-	this.enJeu=false;
+	this.playing=false;
 }
 //*** ** ***
-function comparerId(id){
+function compareId(id){
 	return function(el){return el.id===id;}
 }
 function clamp(x,xmin,xmax){return Math.min(xmax,Math.max(xmin,x));}
 function distance(a,b){var dx=b.x-a.x,dy=b.y-a.y;return Math.sqrt(dx*dx+dy*dy);}
 function cos(a,b){return (a.position.x-b.position.x)/(a.position.y-b.position.y);}
 
-function Vec2(x,y){this.x=x||0;this.y=y||0;}
-Vec2.prototype.getLength=function(){return Math.sqrt(this.x*this.x+this.y*this.y);}
-Vec2.prototype.getSqLength=function(){return this.x*this.x+this.y*this.y;}
-Vec2.prototype.setLength=function(leng){return this.normalize().multiplyScalar(leng);}
-Vec2.prototype.zero=function(){this.x=0;this.y=0;return this;}
-Vec2.prototype.randomize=function(){this.x=-1+2*Math.random();this.y=-1+2*Math.random();return this;}
-Vec2.prototype.set=function(x,y){this.x=x;this.y=y; return this;}
-Vec2.prototype.normalize=function(){var d = this.getLength();if(d!==0){return this.multiplyScalar(1/d);}else{return this.zero();}}
-Vec2.prototype.add=function(p){this.x+=p.x;this.y+=p.y;return this;}
-Vec2.prototype.sub=function(p){this.x-=p.x;this.y-=p.y;return this;}
-Vec2.prototype.multiplyScalar=function(s){this.x*=s;this.y*=s;return this;}
-Vec2.prototype.multiply=function(p){this.x*=p.x;this.y*=p.y;return this;}
-Vec2.prototype.angle=function(){var angle = Math.atan2( this.y, this.x );if ( angle < 0 ) angle += 2 * Math.PI;return angle;}
-Vec2.prototype.rotate=function(angle){return this.rotateAround(new Vec2(),angle);}
-Vec2.prototype.rotateAround = function ( center, angle ) {
+function Point(x,y){this.x=x||0;this.y=y||0;}
+Point.prototype.constructor=Point;
+
+function Vector(x,y){this.x=x||0;this.y=y||0;}
+Vector.prototype.getLength=function(){return Math.sqrt(this.x*this.x+this.y*this.y);}
+Vector.prototype.getSqLength=function(){return this.x*this.x+this.y*this.y;}
+Vector.prototype.setLength=function(leng){return this.normalize().multiplyScalar(leng);}
+Vector.prototype.zero=function(){this.x=0;this.y=0;return this;}
+Vector.prototype.randomize=function(){this.x=-1+2*Math.random();this.y=-1+2*Math.random();return this;}
+Vector.prototype.set=function(x,y){this.x=x;this.y=y; return this;}
+Vector.prototype.normalize=function(){var d = this.getLength();if(d!==0){return this.multiplyScalar(1/d);}else{return this.zero();}}
+Vector.prototype.add=function(p){this.x+=p.x;this.y+=p.y;return this;}
+Vector.prototype.sub=function(p){this.x-=p.x;this.y-=p.y;return this;}
+Vector.prototype.multiplyScalar=function(s){this.x*=s;this.y*=s;return this;}
+Vector.prototype.multiply=function(p){this.x*=p.x;this.y*=p.y;return this;}
+Vector.prototype.angle=function(){var angle = Math.atan2( this.y, this.x );if ( angle < 0 ) angle += 2 * Math.PI;return angle;}
+Vector.prototype.rotate=function(angle){return this.rotateAround(new Vector(),angle);}
+Vector.prototype.rotateAround = function ( center, angle ) {
 		var c = Math.cos( angle ), s = Math.sin( angle );
 		var x = this.x - center.x;
 		var y = this.y - center.y;
@@ -355,19 +381,19 @@ Vec2.prototype.rotateAround = function ( center, angle ) {
 		this.y = x * s + y * c + center.y;
 		return this;
 }
-Vec2.prototype.dot=function(p){
+Vector.prototype.dot=function(p){
 	return this.x*p.x+this.y*p.y;
 }
-Vec2.prototype.getVectorFromAngle=function(a){
+Vector.prototype.getVectorFromAngle=function(a){
 	this.x=Math.cos(a);this.y=Math.sin(a);return this;
 }
-Vec2.prototype.getMiddle=function(v1,v2){
+Vector.prototype.getMiddle=function(v1,v2){
 	this.x=(v1.x+v2.x)/2;this.y=(v1.y+v2.y)/2;return this;
 }
-Vec2.prototype.copy=function(p){this.x=p.x;this.y=p.y;return this;}
-Vec2.prototype.clone=function(){return new this.constructor(this.x,this.y);}
+Vector.prototype.copy=function(p){this.x=p.x;this.y=p.y;return this;}
+Vector.prototype.clone=function(){return new this.constructor(this.x,this.y);}
 
-Vec2.prototype.constructor=Vec2;
+Vector.prototype.constructor=Vector;
 //*** ** ***
 function iRandom(n){return Math.floor(n*Math.random());}
 function S(x){return document.getElementById(x);}
