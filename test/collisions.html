@@ -45,7 +45,7 @@ function start(){
 	
 	//drawBall(context,{x:0,y:0},0.05);
 	//pong.balls.push(new Ball({radius:0.05,coeffRebond:1,position:new Vector(0.12,0),speed:new Vector().randomize().setLength(0.05)}));
-	pong.balls.push(new Ball({radius:0.05,coeffRebond:1,position:new Vector(0.4,-0.7),speed:new Vector(0,1).setLength(0.002)}));
+	pong.balls.push(new Ball({radius:0.05,coeffRebond:1,position:new Vector(0.4,-0.5),speed:new Vector(0,1).setLength(0.002)}));
 	
 	//pong.balls.push(new Ball({radius:0.02,coeffRebond:0.98,position:new Vector(0.12,0),speed:new Vector().randomize().setLength(0.07)}));
 	
@@ -240,13 +240,24 @@ Segment.prototype.testCollision = function(ball,pos1,pos2){
 	var newPos=ballPositionOnTouch.clone().add(newSpeed.clone().setLength(diff));
 	
 	var testDistance=distanceToBallOrthographicProjection<ball.radius;
-	var k=0.9*ball.radius;//tester autrement pour traversée
-	var test1=touchPointOnBall.x>(Math.min(this.start.x,this.end.x)-k-epsilon);
-	var test2=touchPointOnBall.x<(Math.max(this.start.x,this.end.x)+k+epsilon);
-	var test3=touchPointOnBall.y>(Math.min(this.start.y,this.end.y)-k-epsilon);
-	var test4=touchPointOnBall.y<(Math.max(this.start.y,this.end.y)+k+epsilon);
-	//var test=testDistance&&test1&&test2&&test3&&test4;
-	var test=(testDistance||traverse)&&test1&&test2&&test3&&test4;
+	
+	var test1=touchPointOnBall.x>(Math.min(this.start.x,this.end.x)-epsilon);
+	var test2=touchPointOnBall.x<(Math.max(this.start.x,this.end.x)+epsilon);
+	var test3=touchPointOnBall.y>(Math.min(this.start.y,this.end.y)-epsilon);
+	var test4=touchPointOnBall.y<(Math.max(this.start.y,this.end.y)+epsilon);
+	var touchPointOnBallIsBetweenStartAndEnd = test1&&test2&&test3&&test4;
+	
+	var startIsInBall = pos2.clone().sub(this.start).getLength() < ball.radius;
+	var endIsInBall = pos2.clone().sub(this.end).getLength() < ball.radius;
+	
+	var ballCollision=testDistance&&(touchPointOnBallIsBetweenStartAndEnd||startIsInBall||endIsInBall);
+	
+	test1=ballDirectionTouchPoint.x>(Math.min(this.start.x,this.end.x)-ball.radius-epsilon);
+	test2=ballDirectionTouchPoint.x<(Math.max(this.start.x,this.end.x)+ball.radius+epsilon);
+	test3=ballDirectionTouchPoint.y>(Math.min(this.start.y,this.end.y)-ball.radius-epsilon);
+	test4=ballDirectionTouchPoint.y<(Math.max(this.start.y,this.end.y)+ball.radius+epsilon);
+	var ballDirectionTouchPointIsBetweenStartAndEnd = test1&&test2&&test3&&test4;
+	var ballThrough=traverse&&ballDirectionTouchPointIsBetweenStartAndEnd;
 	
 	context.beginPath();
 	drawBall(context,ball.position,ball.radius);
@@ -268,7 +279,7 @@ Segment.prototype.testCollision = function(ball,pos1,pos2){
 	//var ps=this.normal.x*ballSpeed.x+this.normal.y*ballSpeed.y;
 	
 	//if(frameCount<20) S("dbg").innerHTML = test1&&test2&&test3&&test4;
-	return {hitNext:test,positionOnTouch:ballPositionOnTouch,newPos:newPos,newSpeed:newSpeed};
+	return {hitNext:(ballCollision||ballThrough),positionOnTouch:ballPositionOnTouch,newPos:newPos,newSpeed:newSpeed};
 }
 //**** ****
 function Ball(params){//rond
